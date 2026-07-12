@@ -1,8 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.database import Base, engine
+from app.database import Base, engine, SessionLocal
 from app import models
-from app.routers import auth
+from app.routers import auth, test
+from app.models.role import Role
 
 Base.metadata.create_all(bind=engine)
 
@@ -14,7 +15,32 @@ app = FastAPI(
     version="1.0.0"
 )
 
+
+def seed_database():
+    db = SessionLocal()
+    try:
+        # Seed Roles
+        roles_to_create = ["Admin", "Asset Manager", "Department Head", "Employee"]
+        for role_name in roles_to_create:
+            role = db.query(Role).filter(Role.name == role_name).first()
+            if not role:
+                role = Role(name=role_name)
+                db.add(role)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        print(f"Error seeding database: {e}")
+    finally:
+        db.close()
+
+
+@app.on_event("startup")
+def startup_event():
+    seed_database()
+
+
 app.include_router(auth.router)
+app.include_router(test.router)
 
 app.add_middleware(
     CORSMiddleware,
