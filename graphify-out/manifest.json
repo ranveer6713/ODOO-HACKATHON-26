@@ -1,0 +1,457 @@
+{
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/brave-lewin-d48ee2/backend/app/database.py": {
+    "mtime": 1783836007.5559814,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/brave-lewin-d48ee2/backend/app/__init__.py": {
+    "mtime": 1783836007.5558739,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/brave-lewin-d48ee2/backend/app/main.py": {
+    "mtime": 1783836007.5560515,
+    "ast_hash": "708f89d8c1401adb3462b8bb176c9244",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/brave-lewin-d48ee2/backend/app/routers/__init__.py": {
+    "mtime": 1783836007.5561733,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/brave-lewin-d48ee2/backend/app/core/__init__.py": {
+    "mtime": 1783836007.5559456,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/brave-lewin-d48ee2/backend/app/models/__init__.py": {
+    "mtime": 1783836007.556109,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/brave-lewin-d48ee2/backend/app/schemas/__init__.py": {
+    "mtime": 1783836007.5562391,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/brave-lewin-d48ee2/backend/app/workflow/deps.py": {
+    "mtime": 1783836778.4532256,
+    "ast_hash": "989e210e2d3a5d3af4156d3e2c07304e",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/brave-lewin-d48ee2/backend/app/workflow/__init__.py": {
+    "mtime": 1783836778.4427423,
+    "ast_hash": "f8658d7ecdad7378ff19782701cadadd",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/brave-lewin-d48ee2/backend/app/workflow/booking/__init__.py": {
+    "mtime": 1783836778.4511828,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/brave-lewin-d48ee2/backend/app/workflow/booking/router.py": {
+    "mtime": 1783836778.4525054,
+    "ast_hash": "4912b0eee75e7e4c0c6ef71b424f3ba0",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/brave-lewin-d48ee2/backend/app/workflow/audit/__init__.py": {
+    "mtime": 1783836778.4455168,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/brave-lewin-d48ee2/backend/app/workflow/audit/router.py": {
+    "mtime": 1783836778.4473314,
+    "ast_hash": "fed69642c6c5f5af3566d79563bcb6fb",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/brave-lewin-d48ee2/backend/app/workflow/maintenance/__init__.py": {
+    "mtime": 1783836778.4535046,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/brave-lewin-d48ee2/backend/app/workflow/maintenance/router.py": {
+    "mtime": 1783836778.4543114,
+    "ast_hash": "cfc3244bdd6897f01a733b297fd8f56c",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/brave-lewin-d48ee2/backend/app/workflow/notifications/service.py": {
+    "mtime": 1783836778.4559512,
+    "ast_hash": "4389bac48aecf93cc09c05657b3c9052",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/brave-lewin-d48ee2/backend/app/workflow/notifications/__init__.py": {
+    "mtime": 1783836778.4544342,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/brave-lewin-d48ee2/backend/app/workflow/services/__init__.py": {
+    "mtime": 1783836778.4563234,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/brave-lewin-d48ee2/backend/app/workflow/services/activity_log_service.py": {
+    "mtime": 1783836778.4575548,
+    "ast_hash": "826ad1360d3d2b4b32ef6b31ba1f530d",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/brave-lewin-d48ee2/backend/app/workflow/services/asset_gateway.py": {
+    "mtime": 1783836778.45805,
+    "ast_hash": "475d91c84a20371de616143d51d93c3c",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/.claude/settings.local.json": {
+    "mtime": 1783834534.1625054,
+    "ast_hash": "eb8d3d7e67472f7b008f73042ee092a4",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/database.py": {
+    "mtime": 1783835430.5900946,
+    "ast_hash": "024556ad5e64795b02f40e4a2e19379e",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/__init__.py": {
+    "mtime": 1783834518.4762547,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/main.py": {
+    "mtime": 1783835436.5504153,
+    "ast_hash": "b7c1f0b043fbbe66388077aabcf54a73",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/routers/audit.py": {
+    "mtime": 1783835355.654056,
+    "ast_hash": "15bd3c4bb95e292bbf941bf52f77e3d3",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/routers/maintenance.py": {
+    "mtime": 1783835209.5718882,
+    "ast_hash": "cdcdaed3b994f1762f789526e283d4ec",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/routers/notification.py": {
+    "mtime": 1783834954.2650876,
+    "ast_hash": "0672499db5b7bd0aa4bcc2a780210d21",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/routers/booking.py": {
+    "mtime": 1783835670.5814676,
+    "ast_hash": "0acf7facc5546f1d7034bdc1a03cd969",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/routers/__init__.py": {
+    "mtime": 1783835425.2080958,
+    "ast_hash": "61946866317bbff7a52e5c5b5890a670",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/core/enums.py": {
+    "mtime": 1783834797.1588979,
+    "ast_hash": "c050fed3c87bac5700bc6adde455d4d8",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/core/config.py": {
+    "mtime": 1783834729.9046743,
+    "ast_hash": "906d961e19b3f0e2d8e89fc74d729f09",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/core/datetimes.py": {
+    "mtime": 1783834988.152279,
+    "ast_hash": "c4421eb574b6ca29f68a2d3b2a43eee6",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/core/security.py": {
+    "mtime": 1783834819.694573,
+    "ast_hash": "734b2c33bca5aa2146858847db7ff254",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/core/__init__.py": {
+    "mtime": 1783834518.4763296,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/core/permissions.py": {
+    "mtime": 1783834827.1617932,
+    "ast_hash": "657e2a57fa65a8ea5da5230fc6b1eba4",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/core/exceptions.py": {
+    "mtime": 1783834805.5949476,
+    "ast_hash": "ef8f327dc58bce5b37b4cf575381e0fb",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/models/mixins.py": {
+    "mtime": 1783834861.5023685,
+    "ast_hash": "26f74c210a35fac66c9bdbd3a024ec04",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/models/audit.py": {
+    "mtime": 1783835243.8058004,
+    "ast_hash": "ebe3694cd161c43c1f88814331189480",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/models/maintenance.py": {
+    "mtime": 1783835109.2153199,
+    "ast_hash": "9c130c561e16a1850bde98e9e0ac5169",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/models/notification.py": {
+    "mtime": 1783834885.252975,
+    "ast_hash": "dc907a3b53678b16db983130eb7854d6",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/models/booking.py": {
+    "mtime": 1783834970.7308617,
+    "ast_hash": "ca5b1b41b3d5e35548914332dedf81e1",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/models/__init__.py": {
+    "mtime": 1783835378.351577,
+    "ast_hash": "5c8c051ade0886f3928eeb6ea09e1779",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/models/activity_log.py": {
+    "mtime": 1783834892.111931,
+    "ast_hash": "2e8e4df41a1e126858d5ce358ebf42d7",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/schemas/audit.py": {
+    "mtime": 1783835257.4356303,
+    "ast_hash": "79010dd401f3c1a9e621a9445a44cba4",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/schemas/maintenance.py": {
+    "mtime": 1783835120.1150188,
+    "ast_hash": "ecadeb059fb404530d221e7cb86eb593",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/schemas/notification.py": {
+    "mtime": 1783834903.1380084,
+    "ast_hash": "4699e361933a50d0d68990d2ffe9edff",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/schemas/booking.py": {
+    "mtime": 1783834981.9904625,
+    "ast_hash": "9f647f04964f91dc646f9e1cac6052b8",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/schemas/__init__.py": {
+    "mtime": 1783834518.476649,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/schemas/common.py": {
+    "mtime": 1783834898.770396,
+    "ast_hash": "cd71600e36a93dedaacaafffe5c04484",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/validators/maintenance_validator.py": {
+    "mtime": 1783835137.521784,
+    "ast_hash": "3085179098ce291b8aae9e45d2659333",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/validators/booking_validator.py": {
+    "mtime": 1783834997.9544103,
+    "ast_hash": "1ab359f31222089164fe4018f6822216",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/validators/__init__.py": {
+    "mtime": 1783834856.8337584,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/validators/audit_validator.py": {
+    "mtime": 1783835269.710715,
+    "ast_hash": "73afde4bd2f37d51ae332050a36ff594",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/services/maintenance_service.py": {
+    "mtime": 1783835186.759077,
+    "ast_hash": "be8b041fdd066875a5e8d06c96d47bed",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/services/notification_service.py": {
+    "mtime": 1783834943.8986871,
+    "ast_hash": "a772623dd5487a73659f8168df4a1e16",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/services/__init__.py": {
+    "mtime": 1783834856.833711,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/services/booking_service.py": {
+    "mtime": 1783835070.2358782,
+    "ast_hash": "b0b29080b1901c88442d76dc0d338386",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/services/audit_service.py": {
+    "mtime": 1783835330.402769,
+    "ast_hash": "f76e89231ddadda767c8c59814adf4d8",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/services/asset_gateway.py": {
+    "mtime": 1783834845.6700425,
+    "ast_hash": "871b503a0b74942e14ef796bea4d0966",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/app/services/activity_service.py": {
+    "mtime": 1783834910.0758674,
+    "ast_hash": "60f9b3aa1e4b9418cdbef484d3a41203",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/tests/test_maintenance.py": {
+    "mtime": 1783835553.104433,
+    "ast_hash": "c252f6ec2ac63d86718e20398bb7066d",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/tests/conftest.py": {
+    "mtime": 1783835728.6278994,
+    "ast_hash": "0763faa4ce8fcf2cef05a8ec6a86870e",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/tests/__init__.py": {
+    "mtime": 1783835462.8560781,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/tests/test_booking.py": {
+    "mtime": 1783835528.9813545,
+    "ast_hash": "935bb8e2c5e287853d34c9d4b4b7ebce",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/tests/test_notification.py": {
+    "mtime": 1783835607.778469,
+    "ast_hash": "3e436a26621c7fe503b0b976fe3fb5f6",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/tests/test_audit.py": {
+    "mtime": 1783835582.756093,
+    "ast_hash": "b94640b37b90ec0821c09588b25f4581",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/backend/app/database.py": {
+    "mtime": 1783834345.178778,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/backend/app/__init__.py": {
+    "mtime": 1783834345.1785989,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/backend/app/main.py": {
+    "mtime": 1783834345.1788995,
+    "ast_hash": "708f89d8c1401adb3462b8bb176c9244",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/backend/app/routers/__init__.py": {
+    "mtime": 1783834345.179117,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/backend/app/core/__init__.py": {
+    "mtime": 1783834345.1787198,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/backend/app/models/__init__.py": {
+    "mtime": 1783834345.179,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/backend/app/schemas/__init__.py": {
+    "mtime": 1783834345.1792262,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/backend/app/maintenance/service.py": {
+    "mtime": 1783837470.177667,
+    "ast_hash": "3d62e76a2294432fd17022219bdaae6a",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/backend/app/maintenance/deps.py": {
+    "mtime": 1783837185.5590541,
+    "ast_hash": "8ac213123c069bdfc7c0ee77d7b39386",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/backend/app/maintenance/gateway.py": {
+    "mtime": 1783837210.7099333,
+    "ast_hash": "b737c51149439528f0af49c9e51648a3",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/backend/app/maintenance/models.py": {
+    "mtime": 1783837227.0255666,
+    "ast_hash": "a42b8273213ea4e1415f3c38df86785c",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/backend/app/maintenance/validators.py": {
+    "mtime": 1783837257.206766,
+    "ast_hash": "b7264d0067f6b37752116aa4ffc2d964",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/backend/app/maintenance/__init__.py": {
+    "mtime": 1783837317.798956,
+    "ast_hash": "5aa630d5478918a455ac40645b44049d",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/backend/app/maintenance/schemas.py": {
+    "mtime": 1783837242.316712,
+    "ast_hash": "a555ae5b7e4d06a0e799b78354b700ef",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/backend/app/maintenance/exceptions.py": {
+    "mtime": 1783837193.5752485,
+    "ast_hash": "42fed05cdf0da08dbad3295e42e3350f",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/backend/app/maintenance/router.py": {
+    "mtime": 1783837310.2605908,
+    "ast_hash": "5336063087bbc526d4ea3f4aa717fa72",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/backend/tests/test_maintenance.py": {
+    "mtime": 1783837424.6643832,
+    "ast_hash": "002dd02fa4b61dfa782b1151fad87df6",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/backend/tests/conftest.py": {
+    "mtime": 1783837371.207154,
+    "ast_hash": "d6767561a46e36a5ae62b76a8ab4ac15",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/backend/tests/__init__.py": {
+    "mtime": 1783837351.6964405,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/README.md": {
+    "mtime": 1783834345.1784272,
+    "ast_hash": "0d6fb1dcdebfd8b8b76a852d8c3e5d28",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/brave-lewin-d48ee2/README.md": {
+    "mtime": 1783836007.5557714,
+    "ast_hash": "0d6fb1dcdebfd8b8b76a852d8c3e5d28",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/brave-lewin-d48ee2/backend/requirements.txt": {
+    "mtime": 1783836007.5563016,
+    "ast_hash": "bc70c5bddc239f982775cce1dbbd719b",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/README.md": {
+    "mtime": 1783834518.4761574,
+    "ast_hash": "0d6fb1dcdebfd8b8b76a852d8c3e5d28",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/.claude/worktrees/strange-kowalevski-d77c9c/backend/requirements.txt": {
+    "mtime": 1783835619.1252162,
+    "ast_hash": "868ed0e0b4c5ade59ac5a3f18f8ab303",
+    "semantic_hash": ""
+  },
+  "/Users/shonty/ODOO-HACKATHON-26/backend/requirements.txt": {
+    "mtime": 1783834345.179372,
+    "ast_hash": "bc70c5bddc239f982775cce1dbbd719b",
+    "semantic_hash": ""
+  }
+}
