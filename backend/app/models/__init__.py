@@ -3,3 +3,7 @@ from app.models.user import User
 from app.models.employee import Employee
 from app.models.department import Department
 from app.models.category import Category
+from app.models.asset import Asset
+from app.models.allocation import Allocation
+from app.models.transfer import Transfer
+from app.models.asset_history import AssetHistory

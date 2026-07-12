@@ -2,12 +2,29 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 
-DATABASE_URL = "sqlite:///./assetflow.db"
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
+
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql://postgres:postgres@localhost:5432/assetflow"
+)
+
+# Convert relative SQLite path to absolute path relative to backend root
+if DATABASE_URL.startswith("sqlite:///./"):
+    db_name = DATABASE_URL.replace("sqlite:///./", "")
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    DATABASE_URL = f"sqlite:///{os.path.join(BASE_DIR, db_name)}"
+
+connect_args = {}
+if DATABASE_URL.startswith("sqlite"):
+    connect_args["check_same_thread"] = False
 
 engine = create_engine(
     DATABASE_URL,
-    connect_args={"check_same_thread": False}
+    connect_args=connect_args
 )
 
 
