@@ -126,6 +126,8 @@ class AuditService:
         severity: Optional[Union[str, AuditSeverity]] = None,
         flagged: Optional[bool] = None,
         search: Optional[str] = None,
+        date_from: Optional[datetime] = None,
+        date_to: Optional[datetime] = None,
         sort_by: str = "created_at",
         order: str = "desc",
         page: int = 1,
@@ -148,6 +150,11 @@ class AuditService:
             conditions.append(ActivityLog.severity == _coerce_severity(severity))
         if flagged is not None:
             conditions.append(ActivityLog.flagged.is_(flagged))
+        # Inclusive-from / inclusive-to date window over the entry timestamp.
+        if date_from is not None:
+            conditions.append(ActivityLog.created_at >= date_from)
+        if date_to is not None:
+            conditions.append(ActivityLog.created_at <= date_to)
         if search:
             term = f"%{search.strip()}%"
             conditions.append(

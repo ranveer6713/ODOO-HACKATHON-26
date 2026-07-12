@@ -6,7 +6,7 @@ from typing import Generic, List, Optional, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.notifications.models import NotificationType
+from app.notifications.models import NotificationSeverity, NotificationType
 
 T = TypeVar("T")
 
@@ -17,12 +17,15 @@ class NotificationRead(BaseModel):
     id: int
     recipient_id: str
     type: NotificationType
+    severity: NotificationSeverity
     title: str
     message: str
     entity_type: Optional[str]
     entity_id: Optional[str]
     is_read: bool
     read_at: Optional[datetime]
+    archived: bool
+    archived_at: Optional[datetime]
     created_at: datetime
 
 
