@@ -7,6 +7,7 @@ overridden.
 """
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
 from typing import Iterator
 
 import pytest
@@ -252,3 +253,59 @@ def test_api_employee_cannot_flag(client, session_factory):
     resp = client.post(f"/api/audit/{entry_id}/flag", json={"reason": "x"})
     assert resp.status_code == 403
     assert resp.json()["error"]["code"] == "permission_denied"
+
+
+# --------------------------------------------------------------------------- #
+# edge cases — date-window scoping and free-text search
+# --------------------------------------------------------------------------- #
+def _record_at(db, when, *, actor=ACTOR, action="created", description="did a thing"):
+    entry = ActivityLog(
+        actor_id=actor,
+        action=action,
+        entity_type="booking",
+        entity_id="1",
+        description=description,
+        severity=AuditSeverity.INFO,
+        created_at=when,
+    )
+    db.add(entry)
+    db.commit()
+    return entry
+
+
+def test_date_window_filters_are_inclusive(db):
+    mgr = principal(MANAGER, Role.ASSET_MANAGER)
+    base = datetime(2026, 6, 1, 12, 0, tzinfo=timezone.utc)
+    _record_at(db, base - timedelta(days=2))
+    _record_at(db, base)
+    _record_at(db, base + timedelta(days=2))
+
+    _, total = svc.list(db, mgr, date_from=base - timedelta(days=1),
+                        date_to=base + timedelta(days=1))
+    assert total == 1  # only the middle entry falls inside the window
+    _, from_only = svc.list(db, mgr, date_from=base)
+    assert from_only == 2  # inclusive lower bound keeps the boundary entry
+
+
+def test_inverted_date_window_returns_nothing(db):
+    mgr = principal(MANAGER, Role.ASSET_MANAGER)
+    _record(db)
+    now = datetime.now(timezone.utc)
+    _, total = svc.list(db, mgr, date_from=now + timedelta(days=1),
+                        date_to=now - timedelta(days=1))
+    assert total == 0
+
+
+def test_search_matches_action_or_description(db):
+    mgr = principal(MANAGER, Role.ASSET_MANAGER)
+    _record_at(db, datetime(2026, 6, 1, tzinfo=timezone.utc),
+              action="approved", description="looks fine")
+    _record_at(db, datetime(2026, 6, 2, tzinfo=timezone.utc),
+              action="rejected", description="broken hinge")
+
+    _, by_action = svc.list(db, mgr, search="approv")
+    assert by_action == 1
+    _, by_desc = svc.list(db, mgr, search="hinge")
+    assert by_desc == 1
+    _, miss = svc.list(db, mgr, search="nonexistent-token")
+    assert miss == 0

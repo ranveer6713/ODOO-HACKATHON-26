@@ -152,15 +152,17 @@ def client(SessionLocal):
 
         return override_get_db
 
-    # Override each module's own seam onto the shared session / principal. Each
-    # module owns a distinct Principal class, so build it from that module's deps.
+    def make_override_user(mod):
+        # A no-arg override so FastAPI treats it as a leaf dependency. Each module
+        # owns a distinct Principal class, so build it from that module's deps.
+        def override_user():
+            return mod.Principal(id=holder.id, role=mod.Role(holder.role))
+
+        return override_user
+
     for mod in _MODULE_DEPS:
         app.dependency_overrides[mod.get_db] = make_override_db()
-
-        def override_user(_mod=mod):
-            return _mod.Principal(id=holder.id, role=_mod.Role(holder.role))
-
-        app.dependency_overrides[mod.get_current_user] = override_user
+        app.dependency_overrides[mod.get_current_user] = make_override_user(mod)
 
     test_client = TestClient(app)
     test_client.holder = holder  # type: ignore[attr-defined]
@@ -235,7 +237,7 @@ def test_maintenance_write_propagates_to_audit_and_dashboard(client):
     assert raised.status_code == 201, raised.text
     request_id = raised.json()["id"]
 
-    audit = client.get("/api/audit", params={"entity_type": "maintenance"}).json()
+    audit = client.get("/api/audit", params={"entity_type": "maintenance_request"}).json()
     assert audit["meta"]["total"] == 1
     assert audit["items"][0]["entity_id"] == str(request_id)
 

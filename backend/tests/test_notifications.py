@@ -18,7 +18,11 @@ from sqlalchemy.pool import StaticPool
 from app.notifications import deps, register_routes
 from app.notifications.deps import Base, Principal, Role
 from app.notifications.exceptions import NotFoundError, PermissionDeniedError
-from app.notifications.models import Notification, NotificationType  # noqa: F401
+from app.notifications.models import (  # noqa: F401
+    Notification,
+    NotificationSeverity,
+    NotificationType,
+)
 from app.notifications.service import notification_service as svc
 
 USER_A = "u-a"
@@ -221,3 +225,68 @@ def test_api_list_unread_and_mark(client, session_factory):
 
     assert client.post("/api/notifications/read-all").json()["marked_read"] == 1
     assert client.get("/api/notifications/unread-count").json()["unread"] == 0
+
+
+# --------------------------------------------------------------------------- #
+# edge cases — inbox filters, archive lifecycle, idempotent bulk read
+# --------------------------------------------------------------------------- #
+def test_mark_all_read_with_nothing_unread_returns_zero(db):
+    """A no-op bulk read touches no rows and never errors (no needless commit)."""
+    _deliver(db)
+    svc.mark_all_read(db, principal(USER_A))  # clears the one unread
+    assert svc.mark_all_read(db, principal(USER_A)) == 0
+
+
+def test_severity_filter_isolates_critical(db):
+    svc.notify(db, recipient_id=USER_A, type="system", title="ok", message="m")
+    svc.notify(
+        db, recipient_id=USER_A, type="system", title="down", message="m",
+        severity=NotificationSeverity.CRITICAL,
+    )
+    db.commit()
+    rows, total = svc.list_for(
+        db, principal(USER_A), severity=NotificationSeverity.CRITICAL
+    )
+    assert total == 1
+    assert rows[0].severity is NotificationSeverity.CRITICAL
+
+
+def test_read_only_and_unread_only_are_mutually_exclusive_views(db):
+    seen = _deliver(db)
+    _deliver(db)  # stays unread
+    svc.mark_read(db, principal(USER_A), seen.id)
+
+    _, unread_total = svc.list_for(db, principal(USER_A), unread_only=True)
+    _, read_total = svc.list_for(db, principal(USER_A), read_only=True)
+    assert (unread_total, read_total) == (1, 1)
+    # Asking for both at once is contradictory and yields nothing.
+    _, both = svc.list_for(db, principal(USER_A), unread_only=True, read_only=True)
+    assert both == 0
+
+
+def test_archive_hides_from_live_inbox_but_keeps_the_row(db):
+    live = _deliver(db)
+    gone = _deliver(db)
+    svc.archive(db, principal(USER_A), gone.id)
+
+    _, live_total = svc.list_for(db, principal(USER_A), archived=False)
+    _, archived_total = svc.list_for(db, principal(USER_A), archived=True)
+    assert (live_total, archived_total) == (1, 1)
+    # No archive filter still sees every retained row.
+    _, all_total = svc.list_for(db, principal(USER_A))
+    assert all_total == 2
+    assert live.id != gone.id
+
+
+def test_cannot_archive_another_users_notification(db):
+    other = _deliver(db, recipient=USER_B)
+    with pytest.raises(PermissionDeniedError):
+        svc.archive(db, principal(USER_A), other.id)
+
+
+def test_pagination_beyond_last_page_is_empty_with_correct_total(db):
+    for _ in range(3):
+        _deliver(db)
+    rows, total = svc.list_for(db, principal(USER_A), page=99, page_size=20)
+    assert total == 3
+    assert rows == []
