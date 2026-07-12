@@ -17,7 +17,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import List, Optional, Tuple, Union
 
-from sqlalchemy import and_, func, select
+from sqlalchemy import and_, func, select, update
 from sqlalchemy.orm import Session
 
 from app.notifications import validators
@@ -163,24 +163,22 @@ class NotificationService:
         return notification
 
     def mark_all_read(self, db: Session, principal: Principal) -> int:
-        """Mark every unread notification for the caller read; returns the count."""
-        rows = list(
-            db.execute(
-                select(Notification).where(
-                    Notification.recipient_id == principal.id,
-                    Notification.is_read.is_(False),
-                )
+        """Mark every unread notification for the caller read; returns the count.
+
+        A single bulk UPDATE keeps this O(1) round-trips regardless of inbox size
+        (no per-row load or per-row mutation).
+        """
+        result = db.execute(
+            update(Notification)
+            .where(
+                Notification.recipient_id == principal.id,
+                Notification.is_read.is_(False),
             )
-            .scalars()
-            .all()
+            .values(is_read=True, read_at=_utcnow())
         )
-        now = _utcnow()
-        for notification in rows:
-            notification.is_read = True
-            notification.read_at = now
-        if rows:
+        if result.rowcount:
             db.commit()
-        return len(rows)
+        return result.rowcount
 
 
 # Module-level singleton; stateless, so safe to share across requests.

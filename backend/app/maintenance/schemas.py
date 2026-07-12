@@ -49,12 +49,6 @@ class MaintenanceUpdate(BaseModel):
             return v
         return _require_non_blank(v, "issue_description")
 
-    def has_changes(self) -> bool:
-        return any(
-            value is not None
-            for value in (self.priority, self.issue_description, self.photo_url)
-        )
-
 
 class MaintenanceReject(BaseModel):
     reason: str = Field(..., min_length=1, max_length=1000)
