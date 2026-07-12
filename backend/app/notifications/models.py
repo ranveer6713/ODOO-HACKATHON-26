@@ -24,6 +24,20 @@ class NotificationType(str, enum.Enum):
     SYSTEM = "system"
 
 
+class NotificationSeverity(str, enum.Enum):
+    """How much attention a notification warrants.
+
+    Mirrors the activity trail's severity vocabulary so the two surfaces speak
+    the same language. Notifications default to :attr:`INFO`; sibling services
+    may raise the severity (e.g. a flagged action or a breached SLA) so the
+    recipient inbox can surface a dedicated *Critical* view.
+    """
+
+    INFO = "info"
+    WARNING = "warning"
+    CRITICAL = "critical"
+
+
 def _utcnow() -> datetime:
     return datetime.now(timezone.utc)
 
@@ -55,6 +69,18 @@ class Notification(Base):
         index=True,
     )
 
+    severity = Column(
+        Enum(
+            NotificationSeverity,
+            native_enum=False,
+            values_callable=_enum_values,
+            length=20,
+        ),
+        nullable=False,
+        default=NotificationSeverity.INFO,
+        index=True,
+    )
+
     title = Column(String(255), nullable=False)
     message = Column(Text, nullable=False)
 
@@ -64,6 +90,11 @@ class Notification(Base):
 
     is_read = Column(Boolean, nullable=False, default=False, index=True)
     read_at = Column(DateTime(timezone=True), nullable=True)
+
+    # Archive lifecycle — an archived message is hidden from the default inbox
+    # views but retained (never deleted) so the audit story stays intact.
+    archived = Column(Boolean, nullable=False, default=False, index=True)
+    archived_at = Column(DateTime(timezone=True), nullable=True)
 
     created_at = Column(DateTime(timezone=True), nullable=False, default=_utcnow)
 

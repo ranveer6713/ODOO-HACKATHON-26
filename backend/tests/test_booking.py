@@ -291,6 +291,14 @@ def test_cannot_cancel_after_checkout(db, employee, manager):
         svc.cancel(db, employee, booking.id)
 
 
+def test_cannot_cancel_twice(db, employee):
+    booking = _create(db, employee)
+    svc.cancel(db, employee, booking.id, "changed plans")
+    # An already-cancelled booking is a terminal state; cancelling again is illegal.
+    with pytest.raises(ValidationError):
+        svc.cancel(db, employee, booking.id)
+
+
 def test_cancelled_window_frees_the_slot(db, employee):
     first = _create(db, employee, offset_hours=2, length_hours=2)
     svc.cancel(db, employee, first.id)

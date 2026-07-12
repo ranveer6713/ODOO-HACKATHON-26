@@ -77,12 +77,6 @@ class BookingUpdate(BaseModel):
     def _normalise_tz(cls, v: Optional[datetime]) -> Optional[datetime]:
         return _as_utc(v) if v is not None else v
 
-    def has_changes(self) -> bool:
-        return any(
-            value is not None
-            for value in (self.purpose, self.start_time, self.end_time)
-        )
-
 
 class BookingReject(BaseModel):
     reason: str = Field(..., min_length=1, max_length=1000)
