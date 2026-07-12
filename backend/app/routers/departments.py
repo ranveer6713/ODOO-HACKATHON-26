@@ -10,12 +10,15 @@ from app.routers.deps import RoleChecker
 
 router = APIRouter(prefix="/departments", tags=["Departments"])
 
-# Permissions
-admin_or_manager = RoleChecker(["Admin", "Asset Manager"])
+# Permissions: Admin-only
+admin_only = RoleChecker(["Admin"])
 
 
 @router.get("/", response_model=List[DepartmentResponse])
-def list_departments(db: Session = Depends(get_db)):
+def list_departments(
+    db: Session = Depends(get_db),
+    current_user=Depends(admin_only)
+):
     departments = db.query(Department).all()
     # Populate parent_name dynamically
     results = []
@@ -39,11 +42,40 @@ def list_departments(db: Session = Depends(get_db)):
     return results
 
 
+@router.get("/{id}", response_model=DepartmentResponse)
+def get_department(
+    id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(admin_only)
+):
+    dept = db.query(Department).filter(Department.id == id).first()
+    if not dept:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Department not found"
+        )
+    
+    parent_name = None
+    if dept.parent_department_id:
+        parent = db.query(Department).filter(Department.id == dept.parent_department_id).first()
+        if parent:
+            parent_name = parent.name
+            
+    return DepartmentResponse(
+        id=dept.id,
+        name=dept.name,
+        parent_department_id=dept.parent_department_id,
+        department_head_id=dept.department_head_id,
+        is_active=dept.is_active,
+        parent_name=parent_name
+    )
+
+
 @router.post("/", response_model=DepartmentResponse, status_code=status.HTTP_201_CREATED)
 def create_department(
     dept_in: DepartmentCreate,
     db: Session = Depends(get_db),
-    current_user=Depends(admin_or_manager)
+    current_user=Depends(admin_only)
 ):
     # Check if duplicate name
     existing = db.query(Department).filter(Department.name == dept_in.name).first()
@@ -61,6 +93,11 @@ def create_department(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Parent department not found"
             )
+        if not parent.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Parent department is inactive"
+            )
 
     # Check head employee if provided
     if dept_in.department_head_id:
@@ -70,12 +107,17 @@ def create_department(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Department head employee not found"
             )
+        if not head.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Department head employee is inactive"
+            )
 
     dept = Department(
         name=dept_in.name,
         parent_department_id=dept_in.parent_department_id,
         department_head_id=dept_in.department_head_id,
-        is_active=dept_in.is_active
+        is_active=dept_in.is_active if dept_in.is_active is not None else True
     )
     db.add(dept)
     db.commit()
@@ -103,7 +145,7 @@ def update_department(
     id: int,
     dept_in: DepartmentUpdate,
     db: Session = Depends(get_db),
-    current_user=Depends(admin_or_manager)
+    current_user=Depends(admin_only)
 ):
     dept = db.query(Department).filter(Department.id == id).first()
     if not dept:
@@ -131,6 +173,11 @@ def update_department(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Parent department not found"
             )
+        if not parent.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Parent department is inactive"
+            )
         dept.parent_department_id = dept_in.parent_department_id
 
     if dept_in.department_head_id is not None:
@@ -139,6 +186,11 @@ def update_department(
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Department head employee not found"
+            )
+        if not head.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Department head employee is inactive"
             )
         dept.department_head_id = dept_in.department_head_id
 
@@ -168,7 +220,7 @@ def update_department(
 def deactivate_department(
     id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(admin_or_manager)
+    current_user=Depends(admin_only)
 ):
     dept = db.query(Department).filter(Department.id == id).first()
     if not dept:
