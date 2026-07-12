@@ -9,12 +9,19 @@ from app.models.user import User
 
 security = HTTPBearer()
 
+token_blacklist = set()
+
 
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     db: Session = Depends(get_db)
 ):
     token = credentials.credentials
+    if token in token_blacklist:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token has been revoked. Please log in again."
+        )
     payload = decode_access_token(token)
 
     if payload is None:

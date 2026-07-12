@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from datetime import timedelta
 
@@ -8,8 +8,9 @@ from app.core.security import create_access_token, verify_password, get_password
 from app.models.user import User
 from app.models.employee import Employee
 from app.models.role import Role
-from app.schemas.auth import Token, TokenResponse, LoginRequest, SignupRequest, UserResponse
+from app.schemas.auth import Token, TokenResponse, LoginRequest, SignupRequest, UserResponse, ForgotPasswordRequest, ForgotPasswordResponse, ResetPasswordRequest
 from app.routers.deps import get_current_user
+from app.core.dependencies import security
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -113,17 +114,79 @@ def get_authenticated_user(current_user: User = Depends(get_current_user)):
     )
 
 
-@router.post("/forgot-password")
-def forgot_password(email: str, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == email).first()
+@router.post("/forgot-password", response_model=ForgotPasswordResponse)
+def forgot_password(
+    forgot_data: ForgotPasswordRequest,
+    db: Session = Depends(get_db)
+):
+    user = db.query(User).filter(User.email == forgot_data.email).first()
+    
+    expires_delta = timedelta(minutes=15)
+    
+    if user:
+        token = create_access_token(
+            data={"sub": str(user.id), "purpose": "password_reset"},
+            expires_delta=expires_delta
+        )
+    else:
+        # Mock token to prevent account enumeration
+        token = create_access_token(
+            data={"sub": "0", "purpose": "password_reset"},
+            expires_delta=expires_delta
+        )
+        
+    return ForgotPasswordResponse(
+        message="If this email is registered, a password reset link/token has been sent.",
+        reset_token=token
+    )
+
+
+@router.post("/reset-password")
+def reset_password(
+    reset_data: ResetPasswordRequest,
+    db: Session = Depends(get_db)
+):
+    from app.core.security import decode_access_token
+    
+    payload = decode_access_token(reset_data.token)
+    if payload is None or payload.get("purpose") != "password_reset":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset token"
+        )
+        
+    user_id = payload.get("sub")
+    if user_id is None or user_id == "0":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset token"
+        )
+        
+    user = db.query(User).filter(User.id == int(user_id)).first()
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset token"
         )
-    return {"message": f"Password reset instructions sent to {email}"}
+        
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User account is inactive"
+        )
+        
+    user.hashed_password = hash_password(reset_data.new_password)
+    db.commit()
+    return {"message": "Password has been reset successfully"}
 
 
 @router.post("/logout")
-def logout():
+def logout(
+    current_user: User = Depends(get_current_user),
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    from app.core.dependencies import token_blacklist
+    
+    token = credentials.credentials
+    token_blacklist.add(token)
     return {"message": "Successfully logged out"}
