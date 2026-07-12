@@ -20,6 +20,11 @@ dist/
 
 # IDE
 .vscode/
+.claude/
+.idea/
+*.swp
+*.swo
+*~
 
 # OS
 .DS_Store
@@ -27,3 +32,21 @@ Thumbs.db
 
 # Auto-generated output
 graphify-out/
+
+# Benchmarks
+.benchmarks/
+
+# Logs
+*.log
+logs/
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+
+# Build artifacts
+build/
+*.egg-info/
