@@ -1,23 +1,21 @@
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, JSON, String
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text
 from sqlalchemy.orm import relationship
-
 from app.database import Base
 
 
 class AssetHistory(Base):
-    __tablename__ = "asset_histories"
+    __tablename__ = "asset_history"
 
     id = Column(Integer, primary_key=True, index=True)
-    asset_id = Column(Integer, ForeignKey("assets.id"), nullable=False)
-    
-    # Action types: registration, allocation, return, transfer_request, transfer_approve, transfer_reject, maintenance_start, maintenance_end, status_change, audit
-    action = Column(String(50), nullable=False)
-    
-    action_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    action_date = Column(DateTime, nullable=False)
-    
-    notes = Column(String(500), nullable=True)
-    details = Column(JSON, nullable=True)  # Detailed log (e.g. status changes, transfer details)
+    asset_id = Column(Integer, ForeignKey("assets.id"), nullable=False, index=True)
+    performed_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
+    # Actions: registered | allocated | returned | transferred | status_changed | updated
+    action = Column(String(100), nullable=False)
+    action_detail = Column(Text, nullable=True)
+
+    performed_at = Column(DateTime, nullable=False)
+
+    # Relationships
     asset = relationship("Asset", back_populates="history")
-    action_by = relationship("User")
+    performed_by = relationship("User", foreign_keys=[performed_by_id])

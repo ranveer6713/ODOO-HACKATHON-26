@@ -1,195 +1,197 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlalchemy.orm import Session
-from datetime import datetime, timedelta
+from datetime import datetime, timezone
 from typing import List, Optional
 
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.orm import Session
+
 from app.database import get_db
-from app.models.transfer import Transfer
-from app.models.asset import Asset
 from app.models.allocation import Allocation
-from app.models.employee import Employee
+from app.models.asset import Asset
 from app.models.asset_history import AssetHistory
-from app.schemas.transfer import TransferRequest, TransferAction, TransferResponse
+from app.models.employee import Employee
+from app.models.transfer import Transfer
+from app.models.user import User
 from app.routers.deps import get_current_user, get_current_employee, RoleChecker
+from app.schemas.transfer import TransferCreate, TransferAction, TransferResponse
 
 router = APIRouter(prefix="/transfers", tags=["Transfers"])
 
-# Permissions
-admin_or_manager = RoleChecker(["Admin", "Asset Manager"])
+manager_or_above = RoleChecker(["Admin", "Asset Manager"])
 dept_head_or_above = RoleChecker(["Admin", "Asset Manager", "Department Head"])
 
 
+def _log(db: Session, asset_id: int, user_id: int, action: str, detail: str = None):
+    entry = AssetHistory(
+        asset_id=asset_id,
+        performed_by_id=user_id,
+        action=action,
+        action_detail=detail,
+        performed_at=datetime.now(timezone.utc),
+    )
+    db.add(entry)
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# GET /transfers/  – List transfer requests
+# ──────────────────────────────────────────────────────────────────────────────
 @router.get("/", response_model=List[TransferResponse])
 def list_transfers(
-    status: Optional[str] = Query(None, description="Filter by transfer status: 'pending', 'approved', 'rejected'"),
-    db: Session = Depends(get_db)
+    status_filter: Optional[str] = Query(None, alias="status", description="Filter: pending | approved | rejected"),
+    asset_id: Optional[int] = Query(None),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=200),
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
 ):
     query = db.query(Transfer)
-    if status:
-        query = query.filter(Transfer.status == status)
-    return query.all()
+    if status_filter:
+        query = query.filter(Transfer.status == status_filter)
+    if asset_id:
+        query = query.filter(Transfer.asset_id == asset_id)
+    return query.order_by(Transfer.requested_at.desc()).offset(skip).limit(limit).all()
 
 
+# ──────────────────────────────────────────────────────────────────────────────
+# GET /transfers/{id}  – Single transfer detail
+# ──────────────────────────────────────────────────────────────────────────────
+@router.get("/{transfer_id}", response_model=TransferResponse)
+def get_transfer(
+    transfer_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+):
+    t = db.query(Transfer).filter(Transfer.id == transfer_id).first()
+    if not t:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transfer request not found")
+    return t
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# POST /transfers/  – Request a transfer
+# ──────────────────────────────────────────────────────────────────────────────
 @router.post("/", response_model=TransferResponse, status_code=status.HTTP_201_CREATED)
 def request_transfer(
-    transfer_in: TransferRequest,
+    payload: TransferCreate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
-    # Verify Asset exists
-    asset = db.query(Asset).filter(Asset.id == transfer_in.asset_id).first()
+    # Asset must exist
+    asset = db.query(Asset).filter(Asset.id == payload.asset_id, Asset.is_active == True).first()
     if not asset:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Asset not found")
 
-    # Find active allocation to know who it is being transferred FROM
-    active_alloc = db.query(Allocation).filter(
-        Allocation.asset_id == asset.id,
-        Allocation.returned_at == None
-    ).first()
-    
-    if not active_alloc:
+    # Must have an active allocation to an employee
+    active_alloc = (
+        db.query(Allocation)
+        .filter(Allocation.asset_id == asset.id, Allocation.status == "active")
+        .first()
+    )
+    if not active_alloc or not active_alloc.employee_id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Asset is not currently allocated to anyone. You can allocate it directly."
+            detail="Asset must be actively allocated to an employee before a transfer can be requested.",
         )
-        
-    if active_alloc.allocated_to_type != "employee" or not active_alloc.employee_id:
+
+    # Validate target employee
+    to_emp = db.query(Employee).filter(Employee.id == payload.to_employee_id, Employee.is_active == True).first()
+    if not to_emp:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Target employee not found or inactive")
+
+    # Cannot transfer to the same person
+    if active_alloc.employee_id == payload.to_employee_id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Asset is allocated to a department, not a specific employee. Department allocations must be returned first."
+            detail="Cannot transfer asset to the same employee who currently holds it",
         )
 
-    # Verify target Employee exists and is active
-    to_employee = db.query(Employee).filter(Employee.id == transfer_in.to_employee_id).first()
-    if not to_employee:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Target employee not found")
-    if not to_employee.is_active:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Target employee is inactive")
-
-    # Prevent transfer to the same person
-    if active_alloc.employee_id == transfer_in.to_employee_id:
+    # Only one pending transfer per asset at a time
+    pending = (
+        db.query(Transfer)
+        .filter(Transfer.asset_id == asset.id, Transfer.status == "pending")
+        .first()
+    )
+    if pending:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Cannot transfer an asset to the same employee who currently holds it"
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A pending transfer request already exists for this asset",
         )
 
-    # Check if there is already a pending transfer request for this asset
-    pending_transfer = db.query(Transfer).filter(
-        Transfer.asset_id == asset.id,
-        Transfer.status == "pending"
-    ).first()
-    if pending_transfer:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="There is already a pending transfer request for this asset"
-        )
-
-    # Create Transfer Request
+    now = datetime.now(timezone.utc)
     transfer = Transfer(
-        asset_id=transfer_in.asset_id,
+        asset_id=payload.asset_id,
         from_employee_id=active_alloc.employee_id,
-        to_employee_id=transfer_in.to_employee_id,
+        to_employee_id=payload.to_employee_id,
         requested_by_id=current_user.id,
-        request_date=datetime.utcnow(),
+        requested_at=now,
         status="pending",
-        notes=transfer_in.notes
+        requester_notes=payload.requester_notes,
     )
     db.add(transfer)
+    _log(db, asset.id, current_user.id, "transfer_requested",
+         f"Transfer requested from employee {active_alloc.employee_id} → employee {payload.to_employee_id}")
     db.commit()
     db.refresh(transfer)
-
-    # Log History
-    history = AssetHistory(
-        asset_id=asset.id,
-        action="transfer_request",
-        action_by_id=current_user.id,
-        action_date=datetime.utcnow(),
-        notes=f"Transfer requested from employee ID {transfer.from_employee_id} to {transfer.to_employee_id}"
-    )
-    db.add(history)
-    db.commit()
-
     return transfer
 
 
-@router.post("/{id}/action", response_model=TransferResponse)
+# ──────────────────────────────────────────────────────────────────────────────
+# POST /transfers/{id}/action  – Approve or Reject a transfer
+# ──────────────────────────────────────────────────────────────────────────────
+@router.post("/{transfer_id}/action", response_model=TransferResponse)
 def action_transfer(
-    id: int,
-    action_in: TransferAction,
+    transfer_id: int,
+    payload: TransferAction,
     db: Session = Depends(get_db),
-    current_user=Depends(dept_head_or_above)
+    current_user: User = Depends(dept_head_or_above),
 ):
-    transfer = db.query(Transfer).filter(Transfer.id == id).first()
+    transfer = db.query(Transfer).filter(Transfer.id == transfer_id).first()
     if not transfer:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transfer request not found")
-        
+
     if transfer.status != "pending":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Transfer request already processed. Current status: {transfer.status}"
+            detail=f"Transfer has already been actioned (status: {transfer.status})",
         )
 
-    if action_in.status not in ["approved", "rejected"]:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid action status")
-
-    transfer.status = action_in.status
-    transfer.approved_by_id = current_user.id
-    transfer.action_date = datetime.utcnow()
-    if action_in.notes:
-        transfer.notes = (transfer.notes or "") + f" | Action notes: {action_in.notes}"
+    now = datetime.now(timezone.utc)
+    transfer.status = payload.action
+    transfer.actioned_by_id = current_user.id
+    transfer.actioned_at = now
+    transfer.approver_notes = payload.approver_notes
 
     asset = transfer.asset
 
-    if action_in.status == "approved":
-        # 1. Close current active allocation
-        active_alloc = db.query(Allocation).filter(
-            Allocation.asset_id == asset.id,
-            Allocation.returned_at == None
-        ).first()
-        
-        expected_return = datetime.utcnow() + timedelta(days=30)
+    if payload.action == "approved":
+        # 1. Close existing allocation
+        active_alloc = (
+            db.query(Allocation)
+            .filter(Allocation.asset_id == asset.id, Allocation.status == "active")
+            .first()
+        )
         if active_alloc:
-            active_alloc.returned_at = datetime.utcnow()
-            active_alloc.condition_on_return = "Transferred"
-            active_alloc.status = "returned"
-            expected_return = active_alloc.expected_return_date  # Inherit expected return date
-            
-        # 2. Create new allocation
+            active_alloc.returned_at = now
+            active_alloc.condition_in = "Transferred to new holder"
+            active_alloc.status = "transferred"
+
+        # 2. Open new allocation for the recipient
         new_alloc = Allocation(
             asset_id=asset.id,
-            allocated_to_type="employee",
             employee_id=transfer.to_employee_id,
             allocated_by_id=current_user.id,
-            allocated_at=datetime.utcnow(),
-            expected_return_date=expected_return,
-            condition_on_allocation="Transferred from previous holder",
-            status="active"
+            allocated_at=now,
+            expected_return_date=active_alloc.expected_return_date if active_alloc else None,
+            condition_out="Received via approved transfer",
+            status="active",
         )
         db.add(new_alloc)
-        
-        # 3. Update asset status
         asset.status = "Allocated"
-        
-        # Log History
-        history = AssetHistory(
-            asset_id=asset.id,
-            action="transfer_approve",
-            action_by_id=current_user.id,
-            action_date=datetime.utcnow(),
-            notes=f"Transfer approved. Reallocated to Employee ID {transfer.to_employee_id}"
-        )
-        db.add(history)
-        
+
+        _log(db, asset.id, current_user.id, "transfer_approved",
+             f"Transfer approved. Asset reallocated from employee {transfer.from_employee_id} → {transfer.to_employee_id}")
     else:
-        # Transfer rejected
-        history = AssetHistory(
-            asset_id=asset.id,
-            action="transfer_reject",
-            action_by_id=current_user.id,
-            action_date=datetime.utcnow(),
-            notes=f"Transfer request rejected: {action_in.notes or 'No reason provided'}"
-        )
-        db.add(history)
+        _log(db, asset.id, current_user.id, "transfer_rejected",
+             f"Transfer rejected. Reason: {payload.approver_notes or 'None provided'}")
 
     db.commit()
     db.refresh(transfer)

@@ -1,45 +1,39 @@
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, ConfigDict, model_validator
 from typing import Optional
 from datetime import datetime
-from app.schemas.employee import EmployeeResponse
-from app.schemas.department import DepartmentResponse
 
 
-class AllocationBase(BaseModel):
+class AllocationCreate(BaseModel):
     asset_id: int
-    allocated_to_type: str  # "employee" or "department"
     employee_id: Optional[int] = None
     department_id: Optional[int] = None
-    expected_return_date: datetime
-    condition_on_allocation: Optional[str] = None
+    expected_return_date: Optional[datetime] = None
+    condition_out: Optional[str] = None
 
-
-class AllocationCreate(AllocationBase):
-    @validator("employee_id")
-    def validate_employee_id(cls, v, values):
-        if values.get("allocated_to_type") == "employee" and not v:
-            raise ValueError("employee_id is required when allocated_to_type is 'employee'")
-        return v
-
-    @validator("department_id")
-    def validate_department_id(cls, v, values):
-        if values.get("allocated_to_type") == "department" and not v:
-            raise ValueError("department_id is required when allocated_to_type is 'department'")
-        return v
+    @model_validator(mode="after")
+    def validate_recipient(self) -> "AllocationCreate":
+        if self.employee_id is None and self.department_id is None:
+            raise ValueError("Either employee_id or department_id must be provided.")
+        if self.employee_id is not None and self.department_id is not None:
+            raise ValueError("Provide either employee_id or department_id, not both.")
+        return self
 
 
 class AllocationReturn(BaseModel):
-    condition_on_return: Optional[str] = None
+    condition_in: Optional[str] = None
 
 
-class AllocationResponse(AllocationBase):
+class AllocationResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
+    asset_id: int
+    employee_id: Optional[int] = None
+    department_id: Optional[int] = None
     allocated_by_id: int
     allocated_at: datetime
+    expected_return_date: Optional[datetime] = None
     returned_at: Optional[datetime] = None
-    condition_on_return: Optional[str] = None
-    status: str  # "active", "returned", "overdue"
-
-    class Config:
-        orm_mode = True
-        from_attributes = True
+    condition_out: Optional[str] = None
+    condition_in: Optional[str] = None
+    status: str

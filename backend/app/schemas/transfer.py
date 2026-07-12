@@ -1,31 +1,30 @@
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, ConfigDict
+from typing import Optional, Literal
 from datetime import datetime
 
 
-class TransferRequest(BaseModel):
+class TransferCreate(BaseModel):
     asset_id: int
     to_employee_id: int
-    notes: Optional[str] = None
+    requester_notes: Optional[str] = None
 
 
 class TransferAction(BaseModel):
-    status: str  # "approved" or "rejected"
-    notes: Optional[str] = None
+    action: Literal["approved", "rejected"]
+    approver_notes: Optional[str] = None
 
 
 class TransferResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     asset_id: int
     from_employee_id: int
     to_employee_id: int
     requested_by_id: int
-    approved_by_id: Optional[int] = None
-    request_date: datetime
-    action_date: Optional[datetime] = None
+    actioned_by_id: Optional[int] = None
+    requested_at: datetime
+    actioned_at: Optional[datetime] = None
     status: str
-    notes: Optional[str] = None
-
-    class Config:
-        orm_mode = True
-        from_attributes = True
+    requester_notes: Optional[str] = None
+    approver_notes: Optional[str] = None

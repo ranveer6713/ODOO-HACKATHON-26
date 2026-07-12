@@ -1,134 +1,125 @@
+"""
+backend/test_api.py
+End-to-end smoke test for the AssetFlow backend API.
+Usage:  python backend/test_api.py
+Requires the Uvicorn server to be running on http://127.0.0.1:8000
+"""
+
+import sys
 import requests
-import json
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 
-BASE_URL = "http://127.0.0.1:8000/api/v1"
+BASE = "http://127.0.0.1:8000/api/v1"
 
 
-def run_tests():
-    print("=== Testing AssetFlow API ===")
-    
+def ok(label, condition, detail=""):
+    icon = "[PASS]" if condition else "[FAIL]"
+    print(f"  {icon}  {label}" + (f"  ->  {detail}" if detail else ""))
+    if not condition:
+        sys.exit(1)
+
+
+def run():
+    print("\n==========================================")
+    print("  AssetFlow API -- End-to-End Smoke Test  ")
+    print("==========================================\n")
+
     # 1. Login
-    print("\n1. Logging in as Asset Manager (manager@assetflow.com)...")
-    login_data = {
-        "username": "manager@assetflow.com",
-        "password": "manager123"
-    }
-    response = requests.post(f"{BASE_URL}/auth/login", data=login_data)
-    if response.status_code != 200:
-        print(f"Login failed: {response.text}")
-        return
-        
-    token = response.json()["access_token"]
-    headers = {"Authorization": f"Bearer {token}"}
-    print("Login successful! Token acquired.")
+    print("1. Authentication")
+    r = requests.post(f"{BASE}/auth/login", json={"email": "manager@assetflow.com", "password": "manager123"})
+    ok("Login returns 200", r.status_code == 200, str(r.status_code))
+    token = r.json().get("access_token")
+    ok("JWT token received", bool(token))
+    H = {"Authorization": f"Bearer {token}"}
 
-    # 2. Get Assets
-    print("\n2. Fetching asset directory...")
-    response = requests.get(f"{BASE_URL}/assets/", headers=headers)
-    assets = response.json()
-    print(f"Found {len(assets)} assets:")
+    # 2. Asset directory
+    print("\n2. Asset Directory")
+    r = requests.get(f"{BASE}/assets/", headers=H)
+    ok("GET /assets/ returns 200", r.status_code == 200)
+    assets = r.json()
+    ok(f"Seeded assets found (got {len(assets)})", len(assets) >= 3)
     for a in assets:
-        print(f" - [{a['asset_tag']}] {a['name']} (Status: {a['status']})")
-        
-    # Get ID of AST-0001
-    ast1 = next(a for a in assets if a["asset_tag"] == "AST-0001")
-    ast1_id = ast1["id"]
+        print(f"     [{a['asset_tag']}] {a['name']}  --  {a['status']}")
 
-    # 3. Allocate Asset AST-0001 to Employee ID 4 (employee@assetflow.com)
-    print(f"\n3. Allocating asset AST-0001 (ID: {ast1_id}) to Employee 4...")
-    alloc_payload = {
-        "asset_id": ast1_id,
-        "allocated_to_type": "employee",
-        "employee_id": 4,
-        "expected_return_date": (datetime.utcnow() + timedelta(days=7)).isoformat() + "Z",
-        "condition_on_allocation": "Excellent condition"
-    }
-    response = requests.post(f"{BASE_URL}/allocations/", json=alloc_payload, headers=headers)
-    print(f"Allocation Response: {response.status_code}")
-    if response.status_code == 201:
-        alloc = response.json()
-        print(f"Allocation created! ID: {alloc['id']}, Status: {alloc['status']}")
-        alloc_id = alloc["id"]
-    else:
-        print(f"Failed to allocate: {response.text}")
-        return
+    asset1 = next(a for a in assets if a["asset_tag"] == "AST-0001")
+    asset_id = asset1["id"]
 
-    # 4. Conflict Detection: Attempt to allocate again
-    print("\n4. Testing conflict detection (allocating already allocated asset)...")
-    response = requests.post(f"{BASE_URL}/allocations/", json=alloc_payload, headers=headers)
-    print(f"Response code (expected 400): {response.status_code}")
-    print(f"Response details: {response.json().get('detail')}")
+    # 3. Checkout
+    print("\n3. Checkout (Allocate)")
+    due = (datetime.now(timezone.utc) + timedelta(days=7)).isoformat()
+    r = requests.post(
+        f"{BASE}/allocations/",
+        json={"asset_id": asset_id, "employee_id": 4, "expected_return_date": due, "condition_out": "Pristine"},
+        headers=H,
+    )
+    ok("POST /allocations/ returns 201", r.status_code == 201, str(r.status_code))
+    alloc_id = r.json()["id"]
+    ok("Allocation ID assigned", alloc_id > 0, str(alloc_id))
 
-    # 5. Request Transfer to Employee ID 3 (head@assetflow.com)
-    print("\n5. Requesting asset transfer from Employee 4 to Employee 3...")
-    transfer_payload = {
-        "asset_id": ast1_id,
-        "to_employee_id": 3,
-        "notes": "Need MacBook for field work"
-    }
-    response = requests.post(f"{BASE_URL}/transfers/", json=transfer_payload, headers=headers)
-    print(f"Transfer Request Response: {response.status_code}")
-    if response.status_code == 201:
-        transfer = response.json()
-        print(f"Transfer requested! ID: {transfer['id']}, Status: {transfer['status']}")
-        transfer_id = transfer["id"]
-    else:
-        print(f"Failed to request transfer: {response.text}")
-        return
+    # 4. Conflict detection
+    print("\n4. Conflict Detection")
+    r = requests.post(
+        f"{BASE}/allocations/",
+        json={"asset_id": asset_id, "employee_id": 3},
+        headers=H,
+    )
+    ok("Re-allocation blocked (409)", r.status_code == 409, str(r.status_code))
+    print(f"     Detail: {r.json().get('detail')}")
 
-    # 6. Approve Transfer
-    print(f"\n6. Approving transfer ID {transfer_id}...")
-    action_payload = {
-        "status": "approved",
-        "notes": "Approved by IT Asset Manager"
-    }
-    response = requests.post(f"{BASE_URL}/transfers/{transfer_id}/action", json=action_payload, headers=headers)
-    print(f"Transfer Approval Response: {response.status_code}")
-    if response.status_code == 200:
-        print("Transfer approved successfully!")
-    else:
-        print(f"Failed to approve transfer: {response.text}")
-        return
+    # 5. Transfer request
+    print("\n5. Transfer Request")
+    r = requests.post(
+        f"{BASE}/transfers/",
+        json={"asset_id": asset_id, "to_employee_id": 3, "requester_notes": "Needed for client visit"},
+        headers=H,
+    )
+    ok("POST /transfers/ returns 201", r.status_code == 201, str(r.status_code))
+    transfer_id = r.json()["id"]
+    ok("Transfer ID assigned", transfer_id > 0, str(transfer_id))
 
-    # 7. Check current asset holder and active allocations
-    print("\n7. Verifying asset status and new holder after transfer...")
-    response = requests.get(f"{BASE_URL}/assets/{ast1_id}", headers=headers)
-    asset_updated = response.json()
-    print(f"Asset Status: {asset_updated['status']}")
-    
-    response = requests.get(f"{BASE_URL}/allocations/asset/{ast1_id}", headers=headers)
-    if response.status_code == 200:
-        new_alloc = response.json()
-        print(f"Current Active Allocation ID: {new_alloc['id']}")
-        print(f"Allocated to Employee ID: {new_alloc['employee_id']} (Status: {new_alloc['status']})")
-        new_alloc_id = new_alloc["id"]
-    else:
-        print(f"Failed to get active allocation: {response.text}")
-        return
+    # 6. Transfer approval
+    print("\n6. Transfer Approval")
+    r = requests.post(
+        f"{BASE}/transfers/{transfer_id}/action",
+        json={"action": "approved", "approver_notes": "Approved by IT Manager"},
+        headers=H,
+    )
+    ok("POST /transfers/{id}/action returns 200", r.status_code == 200, str(r.status_code))
+    ok("Transfer status is approved", r.json()["status"] == "approved")
 
-    # 8. Return Asset
-    print(f"\n8. Returning asset AST-0001 (Closing allocation {new_alloc_id})...")
-    return_payload = {
-        "condition_on_return": "Good condition, slight keyboard wear"
-    }
-    response = requests.post(f"{BASE_URL}/allocations/{new_alloc_id}/return", json=return_payload, headers=headers)
-    print(f"Return Response: {response.status_code}")
-    if response.status_code == 200:
-        print("Asset returned successfully!")
-    else:
-        print(f"Failed to return asset: {response.text}")
-        return
+    # 7. Verify new holder
+    print("\n7. Verify new holder")
+    r = requests.get(f"{BASE}/allocations/?asset_id={asset_id}&status=active", headers=H)
+    ok("Active allocation found", r.status_code == 200 and len(r.json()) == 1)
+    new_alloc = r.json()[0]
+    ok("New holder is employee 3", new_alloc["employee_id"] == 3, str(new_alloc["employee_id"]))
+    new_alloc_id = new_alloc["id"]
 
-    # 9. Verify Asset is Available again
-    print("\n9. Verifying asset is back to Available...")
-    response = requests.get(f"{BASE_URL}/assets/{ast1_id}", headers=headers)
-    asset_final = response.json()
-    print(f"Asset Name: {asset_final['name']}")
-    print(f"Asset Status (expected Available): {asset_final['status']}")
-    
-    print("\n=== All Tests Completed Successfully! ===")
+    # 8. Return
+    print("\n8. Asset Return")
+    r = requests.post(
+        f"{BASE}/allocations/{new_alloc_id}/return",
+        json={"condition_in": "Good -- minor surface scratches"},
+        headers=H,
+    )
+    ok("POST /allocations/{id}/return returns 200", r.status_code == 200, str(r.status_code))
+
+    # 9. Asset back to Available
+    print("\n9. Asset Status After Return")
+    r = requests.get(f"{BASE}/assets/{asset_id}", headers=H)
+    ok("Asset status is Available", r.json()["status"] == "Available", r.json()["status"])
+
+    # 10. Audit history
+    print("\n10. Audit History")
+    r = requests.get(f"{BASE}/assets/{asset_id}/history", headers=H)
+    ok("History records exist", r.status_code == 200 and len(r.json()) > 0, str(len(r.json())))
+    for h in r.json():
+        print(f"     [{h['performed_at'][:19]}]  {h['action']}")
+
+    print("\n==========================================")
+    print("  All tests passed!")
+    print("==========================================\n")
 
 
 if __name__ == "__main__":
-    run_tests()
+    run()
