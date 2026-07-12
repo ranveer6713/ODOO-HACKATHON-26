@@ -1,5 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.database import Base, engine
+from app import models
+from app.routers import auth
+
+Base.metadata.create_all(bind=engine)
 
 from app.routers import auth, departments, categories, employees, assets, allocations, transfers
 
@@ -8,6 +13,8 @@ app = FastAPI(
     description="Enterprise Asset & Resource Management System",
     version="1.0.0"
 )
+
+app.include_router(auth.router)
 
 app.add_middleware(
     CORSMiddleware,
